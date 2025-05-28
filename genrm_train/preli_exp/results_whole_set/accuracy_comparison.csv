@@ -1,0 +1,12 @@
+,genrm_deepscaler,genrm_math,genrm_orz,genrm_skywork
+Random-Baseline,0.482,0.5085,0.5025,0.482
+DeepSeek-R1-Distill-Qwen-1.5B,0.835,0.8065,0.8045,0.799
+DeepSeek-R1-Distill-Qwen-7B,0.941,0.9455,0.939,0.9065
+Qwen2.5-1.5B-Instruct,0.9535,0.9565,0.954,0.896
+Qwen2.5-7B-Instruct,0.9535,0.958,0.942,0.9125
+Qwen2.5-Math-1.5B-Instruct,0.953,0.958,0.945,0.901
+Qwen2.5-Math-7B-Instruct,0.9555,0.9565,0.9435,0.905
+r1-1.5b-trn_verifier-lr1e-4-0417-3epoch,0.9125,0.9305,0.944,0.89
+tiger-verifier,0.9705,0.983,0.979,0.961
+xVerify-0.5B-I,0.947,0.974,0.9645,0.914
+xVerify-3B-Ia,0.9475,0.9875,0.9665,0.946

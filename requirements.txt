@@ -1,0 +1,25 @@
+# requirements.txt records the full set of dependencies for development
+accelerate
+codetiming
+datasets
+dill
+flash-attn
+hydra-core
+numpy
+pandas
+peft
+pyarrow>=15.0.0
+pybind11
+pylatexenc
+ray[data,train,tune,serve]
+tensordict
+torchdata
+transformers
+# vllm should be already installed via hot fix to avoid the memory leakage problem
+vllm
+wandb
+liger-kernel
+latex2sympy2
+word2number
+pylatexenc
+sandbox-fusion

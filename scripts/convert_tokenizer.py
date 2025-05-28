@@ -1,0 +1,33 @@
+# Given a tokenizer config, add the "chat_template" into it and save it to a new file.
+import json
+from transformers import AutoTokenizer
+import os
+
+
+def override_tokenizer_template_r1(tokenizer_config_file, stop_string, tokenizer_write_file):
+    default_chat_template = """{% if not add_generation_prompt is defined %}{% set add_generation_prompt = false %}{% endif %}{{ bos_token }}{% for message in messages %}{% if message['role'] == 'user' %}{{ 'A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The Assistant first reflects on the reasoning process, which is articulated within <think> and </think> tags. The final answer is enclosed within <answer> and </answer> tags, and ending with[END_TOKEN]. The response format is as <think> reasoning process here </think> <answer> answer here </answer>[END_TOKEN]. User: ' + message['content'] + '\n\n' }}{% elif message['role'] == 'assistant' %}{{ 'Assistant: ' + message['content'] + eos_token }}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ 'Assistant:' }}{% endif %}"""
+    tokenizer_config = json.load(open(tokenizer_config_file))
+    tokenizer_config['chat_template'] = default_chat_template
+    json.dump(tokenizer_config, open(tokenizer_write_file, 'w'), indent=4)
+
+
+def override_tokenizer_template(tokenizer_config_file, tokenizer_write_file):
+    tokenizer_config = json.load(open(tokenizer_config_file))
+    tokenizer_config['chat_template'] = "{{- bos_token }}\n{%- if custom_tools is defined %}\n    {%- set tools = custom_tools %}\n{%- endif %}\n{%- if not tools_in_user_message is defined %}\n    {%- set tools_in_user_message = true %}\n{%- endif %}\n{%- if not date_string is defined %}\n    {%- if strftime_now is defined %}\n        {%- set date_string = strftime_now(\"%d %b %Y\") %}\n    {%- else %}\n        {%- set date_string = \"26 Jul 2024\" %}\n    {%- endif %}\n{%- endif %}\n{%- if not tools is defined %}\n    {%- set tools = none %}\n{%- endif %}\n\n{#- This block extracts the system message, so we can slot it into the right place. #}\n{%- if messages[0]['role'] == 'system' %}\n    {%- set system_message = messages[0]['content']|trim %}\n    {%- set messages = messages[1:] %}\n{%- else %}\n    {%- set system_message = \"\" %}\n{%- endif %}\n\n{#- System message #}\n{{- \"<|start_header_id|>system<|end_header_id|>\\n\\n\" }}\n{%- if tools is not none %}\n    {{- \"Environment: ipython\\n\" }}\n{%- endif %}\n{{- \"Cutting Knowledge Date: December 2023\\n\" }}\n{{- \"Today Date: \" + date_string + \"\\n\\n\" }}\n{%- if tools is not none and not tools_in_user_message %}\n    {{- \"You have access to the following functions. To call a function, please respond with JSON for a function call.\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n{%- endif %}\n{{- system_message }}\n{{- \"<|eot_id|>\" }}\n\n{#- Custom tools are passed in a user message with some extra guidance #}\n{%- if tools_in_user_message and not tools is none %}\n    {#- Extract the first user message so we can plug it in here #}\n    {%- if messages | length != 0 %}\n        {%- set first_user_message = messages[0]['content']|trim %}\n        {%- set messages = messages[1:] %}\n    {%- else %}\n        {{- raise_exception(\"Cannot put tools in the first user message when there's no first user message!\") }}\n{%- endif %}\n    {{- '<|start_header_id|>user<|end_header_id|>\\n\\n' -}}\n    {{- \"Given the following functions, please respond with a JSON for a function call \" }}\n    {{- \"with its proper arguments that best answers the given prompt.\\n\\n\" }}\n    {{- 'Respond in the format {\"name\": function name, \"parameters\": dictionary of argument name and its value}.' }}\n    {{- \"Do not use variables.\\n\\n\" }}\n    {%- for t in tools %}\n        {{- t | tojson(indent=4) }}\n        {{- \"\\n\\n\" }}\n    {%- endfor %}\n    {{- first_user_message + \"<|eot_id|>\"}}\n{%- endif %}\n\n{%- for message in messages %}\n    {%- if not (message.role == 'ipython' or message.role == 'tool' or 'tool_calls' in message) %}\n        {{- '<|start_header_id|>' + message['role'] + '<|end_header_id|>\\n\\n'+ message['content'] | trim + '<|eot_id|>' }}\n    {%- elif 'tool_calls' in message %}\n        {%- if not message.tool_calls|length == 1 %}\n            {{- raise_exception(\"This model only supports single tool-calls at once!\") }}\n        {%- endif %}\n        {%- set tool_call = message.tool_calls[0].function %}\n        {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' -}}\n        {{- '{\"name\": \"' + tool_call.name + '\", ' }}\n        {{- '\"parameters\": ' }}\n        {{- tool_call.arguments | tojson }}\n        {{- \"}\" }}\n        {{- \"<|eot_id|>\" }}\n    {%- elif message.role == \"tool\" or message.role == \"ipython\" %}\n        {{- \"<|start_header_id|>ipython<|end_header_id|>\\n\\n\" }}\n        {%- if message.content is mapping or message.content is iterable %}\n            {{- message.content | tojson }}\n        {%- else %}\n            {{- message.content }}\n        {%- endif %}\n        {{- \"<|eot_id|>\" }}\n    {%- endif %}\n{%- endfor %}\n{%- if add_generation_prompt %}\n    {{- '<|start_header_id|>assistant<|end_header_id|>\\n\\n' }}\n{%- endif %}\n"
+    print("The new chat template is: ", tokenizer_config['chat_template'])
+    json.dump(tokenizer_config, open(tokenizer_write_file, 'w'), indent=4)
+
+
+def fix_eos_token(tokenizer_config_file, tokenizer_write_file):
+    tokenizer_config = json.load(open(tokenizer_config_file))
+    tokenizer_config['eos_token'] = '<|eot_id|>'
+    tokenizer_config['pad_token'] = '<|eot_id|>'
+    print("The new eos token is: ", tokenizer_config['eos_token'])
+    print("The new pad token is: ", tokenizer_config['pad_token'])
+    json.dump(tokenizer_config, open(tokenizer_write_file, 'w'), indent=4)
+
+if __name__ == '__main__':
+    override_tokenizer_template('/mnt/hdfs/tiktok_aiic/user/liuqian/Mistral-24B-SFT-step100/tokenizer_config.json',
+                                'tokenizer_config.json')
+    # fix_eos_token('/mnt/hdfs/tiktok_aiic/user/liuqian/llama3_1_8b_sft-step1000/tokenizer_config.json',
+    #                 '/mnt/hdfs/tiktok_aiic/user/liuqian/llama3_1_8b_sft-step1000/tokenizer_config.json')
