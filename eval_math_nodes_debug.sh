@@ -119,16 +119,13 @@ fi
 
 eval_script_path="sh/eval.sh"
 
-# HDFS_HOME="/mnt/hdfs/byte_data_seed_azureb_tteng/user/huangyuzhen/SimpleRL-verl"
-# 需要测试的模型
-# RUN_NAME="debug_ppo_3node_long_gen_1"
 base_checkpoint_path="${DEFAULT_HDFS_CHECKPOINT_PATH}/${RUN_NAME}"
 
 # 定义初始化模型路径, SFT模型
 init_model_path="${DEFAULT_HDFS_MODEL_PATH}/${INIT_MODEL_PATH}"
 chmod +x sh/convert_and_evaluate_gpu_nodes.sh
 
-TOTAL_NODES=${ARNOLD_WORKER_NUM:-8}  # Default to 1 if not set
+TOTAL_NODES=${ARNOLD_WORKER_NUM:-1}  # Default to 1 if not set
 CURRENT_NODE=${ARNOLD_ID:-0}  # Default to 0 if not set
 # TOTAL_NODES=2 # Default to 1 if not set
 # CURRENT_NODE=0  # Default to 0 if not set
@@ -159,10 +156,6 @@ CURRENT_NODE=${ARNOLD_ID:-0}  # Default to 0 if not set
 #     fi
 # fi
 
-
-
-
-
 # Before calling convert_and_evaluate_gpu.sh, get all checkpoints and distribute them
 get_all_checkpoints() {
     local base_path="$1"
@@ -184,11 +177,7 @@ get_all_checkpoints() {
         # Otherwise, collect all checkpoints
         for ckpt_dir in "$base_path"/global_step_*; do
             if [ -d "$ckpt_dir" ]; then
-                step_tag=$(basename "$ckpt_dir")        
-                current_step=$(echo "$step_tag" | sed 's/global_step_//')
-                if (( current_step >= 80 )); then
-                    checkpoints+=("$step_tag")
-                fi
+                step_tag=$(basename "$ckpt_dir")
                 checkpoints+=("$step_tag")
             fi
         done
@@ -203,7 +192,7 @@ get_all_checkpoints() {
 }
 # Get all checkpoints
 
-readarray -t all_checkpoints < <(get_all_checkpoints "$base_checkpoint_path" "$specific_steps")
+readarray -t all_checkpoints < <(get_all_checkpoints "${base_checkpoint_path}" "$specific_steps")
 
 total_ckpts=${#all_checkpoints[@]}
 
@@ -215,58 +204,17 @@ fi
 echo "Total checkpoints: $total_ckpts"
 echo "Running on node $CURRENT_NODE of $TOTAL_NODES nodes"
 
-# Distribute checkpoints across nodes
-declare -a node_checkpoints
-for ((i=0; i<${#all_checkpoints[@]}; i++)); do
-    if [ $((i % TOTAL_NODES)) -eq $CURRENT_NODE ]; then
-        node_checkpoints+=("${all_checkpoints[i]}")
-    fi
-done
-echo "This node will evaluate ${#node_checkpoints[@]} checkpoints:"
-printf '%s\n' "${node_checkpoints[@]}"
-# Create a temporary file with the assigned checkpoints
-tmp_ckpt_file=$(mktemp)
-printf '%s\n' "${node_checkpoints[@]}" > "$tmp_ckpt_file"
 
-if [ "$just_wandb" != "true" ]; then
-    # # 调用转化和评估脚本
-    bash sh/convert_and_evaluate_gpu_nodes.sh \
-    "$eval_script_path" \
-    "$base_checkpoint_path" \
-    "$init_model_path" \
-    "$template" \
-    "$benchmarks" \
-    "$temperature" \
-    "$max_tokens" \
-    "$top_p" \
-    "$tp_size" \
-    "$tmp_ckpt_file" \
-    "$output_dir" \
-    "$overwrite" \
-    "$n_sampling" \
-    "$convert_model" \
-    "$split" \
-    "$n_test_sample" 
-fi
-
-# # Log results to wandb
-# export WANDB_OFFICIAL=1
-# export WANDB_API_KEY=78c280e2fa597b45660678c48f3dfe054930af18
-# Only run wandb logging on the first node to avoid duplicates
-# if  [ "$just_wandb" = "true" ]; then
-    # Log results to wandb
-# export WANDB_OFFICIAL=1
-# export WANDB_API_KEY=78c280e2fa597b45660678c48f3dfe054930af18
-output_dir_ts="/mnt/bn/tiktok-mm-5/aiic/users/tianshun/verl/Exp/infer_result"
-export PROJECT_NAME="Reinforcement-Learning"
-export RUN_NAME="vllm-v1-0519-on-policy-large-off-policy-maximum-rejection-sampling_rmclipTrue_batch512_ppomini64_rolln64_maxres4096_maxvalres8192_deepscaler_train_simplelr_math_35_train_Qwen2.5-7B"
-python sh/collect_results.py \
-    --base_dir "$output_dir_ts/$output_dir" \
-    --model_name $init_model_path \
-    --wandb_project "verl_math_evaluate" \
-    --wandb_api_key "${WANDB_API_KEY}" \
-    --wandb_run_name $RUN_NAME \
-    --temperature $temperature \
-    --benchmarks $benchmarks \
-    --use_wandb 
-# fi
+bash eval_math_nodes.sh \
+    --run_name vllm-v1-0519-on-policy-large-off-policy-maximum-rejection-sampling_rmclipTrue_batch512_ppomini64_rolln64_maxres4096_maxvalres8192_deepscaler_train_simplelr_math_35_train_Qwen2.5-7B_hf_converted \
+    --init_model Qwen2.5-7B \
+    --template qwen-boxed  \
+    --tp_size 2 \
+    --add_step_0 true  \
+    --temperature 1.0 \
+    --top_p 0.7 \
+    --max_tokens 32000 \
+    --output_dir log_tmp \
+    --benchmarks aime24  \
+    --n_sampling 32 \
+    --convert_model true

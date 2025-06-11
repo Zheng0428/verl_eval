@@ -9,7 +9,8 @@ DEFAULT_WANDB_OFFICIAL=1
 DEFAULT_VLLM_ATTENTION_BACKEND="XFORMERS"
 DEFAULT_HDFS_DATA_PATH="/mnt/bn/tiktok-mm-5/aiic/users/tianyu/dataset/RL-dataset"
 DEFAULT_HDFS_MODEL_PATH="/mnt/hdfs/tiktok_aiic/user/codeai/hf_models"
-DEFAULT_HDFS_CHECKPOINT_PATH="/mnt/hdfs/tiktok_aiic/user/tianyu/verl_rl_checkpoints"
+# DEFAULT_HDFS_CHECKPOINT_PATH="/mnt/hdfs/tiktok_aiic/user/tianyu/verl_rl_checkpoints"
+DEFAULT_HDFS_CHECKPOINT_PATH="/mnt/hdfs/tiktok_aiic/user/tianshun/verl_rl_checkpoints"
 DEFAULT_HDFS_LOG_PATH="/mnt/hdfs/tiktok_aiic/user/tianyu/verl_rl_logs"
 DEFAULT_RUN_NAME="verl-srpo-v1"
 

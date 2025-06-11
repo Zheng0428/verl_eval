@@ -158,7 +158,8 @@ process_checkpoint() {
         gpu_ids="${gpu_ids}$((start_gpu + i))"
     done
     
-    ckpt_path="$base_checkpoint_path/$step_tag/$actor_dir/huggingface"
+    # ckpt_path="$base_checkpoint_path/$step_tag/$actor_dir/huggingface"
+    ckpt_path="$base_checkpoint_path/$step_tag"
     
     # Convert model if needed
     if [ "$convert_model" = "true" ]; then

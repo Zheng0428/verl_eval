@@ -1,0 +1,23 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1749608571.231	     0.003	0	115	0	0	evaluate_checkpoint 80 '0,1,2,3' 1
+2	:	1749608571.234	     0.003	0	115	0	0	evaluate_checkpoint 80 '4,5,6,7' 2
+3	:	1749608571.236	     0.007	0	117	0	0	evaluate_checkpoint 100 '0,1,2,3' 1
+4	:	1749608571.244	     0.009	0	117	0	0	evaluate_checkpoint 100 '4,5,6,7' 2
+5	:	1749608571.253	     0.006	0	117	0	0	evaluate_checkpoint 120 '0,1,2,3' 1
+6	:	1749608571.260	     0.006	0	117	0	0	evaluate_checkpoint 120 '4,5,6,7' 2
+7	:	1749608571.267	     0.011	0	117	0	0	evaluate_checkpoint 140 '0,1,2,3' 1
+8	:	1749608571.278	     0.010	0	117	0	0	evaluate_checkpoint 140 '4,5,6,7' 2
+9	:	1749608571.289	     0.007	0	117	0	0	evaluate_checkpoint 160 '0,1,2,3' 1
+10	:	1749608571.296	     0.009	0	117	0	0	evaluate_checkpoint 160 '4,5,6,7' 2
+11	:	1749608571.305	     0.008	0	117	0	0	evaluate_checkpoint 180 '0,1,2,3' 1
+12	:	1749608571.314	     0.007	0	117	0	0	evaluate_checkpoint 180 '4,5,6,7' 2
+13	:	1749608571.321	     0.007	0	117	0	0	evaluate_checkpoint 200 '0,1,2,3' 1
+14	:	1749608571.328	     0.008	0	117	0	0	evaluate_checkpoint 200 '4,5,6,7' 2
+15	:	1749608571.336	     0.013	0	117	0	0	evaluate_checkpoint 220 '0,1,2,3' 1
+16	:	1749608571.348	     0.006	0	117	0	0	evaluate_checkpoint 220 '4,5,6,7' 2
+17	:	1749608571.355	     0.009	0	117	0	0	evaluate_checkpoint 240 '0,1,2,3' 1
+18	:	1749608571.363	     0.008	0	117	0	0	evaluate_checkpoint 240 '4,5,6,7' 2
+19	:	1749608571.371	     0.007	0	117	0	0	evaluate_checkpoint 260 '0,1,2,3' 1
+20	:	1749608571.379	     0.011	0	117	0	0	evaluate_checkpoint 260 '4,5,6,7' 2
+21	:	1749608571.389	     0.008	0	117	0	0	evaluate_checkpoint 280 '0,1,2,3' 1
+22	:	1749608571.397	     0.007	0	117	0	0	evaluate_checkpoint 280 '4,5,6,7' 2

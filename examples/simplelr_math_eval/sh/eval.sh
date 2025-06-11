@@ -37,7 +37,7 @@ done
 if [ "$temperature" = "0.0" ] || [ "$temperature" = "0" ]; then
     REGULAR_BENCHMARKS=("${REGULAR_BENCHMARKS[@]}" "${SPECIAL_BENCHMARKS[@]}")
     SPECIAL_BENCHMARKS=()
-fi
+fi  
 
 # Run regular benchmarks with n_sampling=1
 if [ ${#REGULAR_BENCHMARKS[@]} -gt 0 ]; then
